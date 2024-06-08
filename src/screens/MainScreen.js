@@ -94,11 +94,16 @@ function MainScreen({ navigation, account, props }) {
 
     // Handling Buttons
     const handleConfirm = () => {
-        selectedBets.forEach(bet => {
-            bet.wager += parseFloat(wageredAmount); //wagerAmount is a string, so we need to convert it to a float
-            dispatch(checkWallet(bet)); // Dispatch each bet to the store REDUX STUFF
+        const updatedBets = selectedBets.map(bet => ({
+            ...bet,
+            wager: bet.wager + parseFloat(wageredAmount) // Ensure wageredAmount is a number
+        }));
+        updatedBets.forEach(bet => {
+            dispatch(checkWallet(bet)); // Dispatch each updated bet to the store
         });
+        setSelectedBets([])
         setShowConfirmationCard(false);
+        setWageredAmount(0); 
     };
     const handleCancel = () => {
         setSelectedBets([]);

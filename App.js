@@ -8,27 +8,11 @@ import MainScreen from './src/screens/MainScreen.js';
 import MyAccountScreen from './src/screens/myAccountScreen.js';
 import MyBetsScreen from './src/screens/MyBetsScreen.js';
 import LoginScreen from './src/screens/LoginScreen.js';
+import SignUpScreen from './src/screens/SignUpScreen.js';
 //import ChatScreen from './src/screens/ChatScreen.js';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { Provider } from 'react-redux';
 import store from './src/redux/store.js';
-// import firebase from '@react-native-firebase/app';
-
-
-// // Initialize Firebase
-// const firebaseConfig = {
-//   apiKey: "",
-//   authDomain: "poseidonspicks.firebaseapp.com",
-//   //databaseURL: "https://poseidonspicks.firebaseio.com",
-//   projectId: "poseidonspicks",
-//   storageBucket: "poseidonspicks.appspot.com",
-//   messagingSenderId: "",
-//   appId: "",
-// };
-
-// if (!firebase.apps.length) {
-//   firebase.initializeApp(firebaseConfig);
-// }
 
 const appConfig = require('./app.json');
 const appName = appConfig.name;
@@ -77,6 +61,7 @@ export default function App() {
           <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
             {/*<Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />*/}
+            <Stack.Screen name="SignUpScreen" component={SignUpScreen} options={{ headerShown: false }} />
             <Stack.Screen name="App" component={BottomTabNavigator} options={{ gestureEnabled: false, headerShown: false }} />
           </Stack.Navigator>
         </NavigationContainer>
