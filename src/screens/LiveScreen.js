@@ -33,7 +33,7 @@ const myTheme = {
 };
 
 
-function MainScreen({ navigation, account, props }) {
+function LiveScreen({ navigation, account, props }) {
 
     const [odds, setOdds] = React.useState([]);
     const [sports, setSports] = React.useState([]);
@@ -43,12 +43,9 @@ function MainScreen({ navigation, account, props }) {
     const [placedBets, setPlacedBets] = React.useState([]);
     const [showConfirmationCard, setShowConfirmationCard] = React.useState(false);
     const [wageredAmount, setWageredAmount] = React.useState(null);
-    const [menuVisible, setMenuVisible] = React.useState(false);
 
     const reactNavigation = useNavigation();
-    const openMenu = () => setMenuVisible(true);
 
-    const closeMenu = () => setMenuVisible(false);
 
 
 
@@ -70,14 +67,32 @@ function MainScreen({ navigation, account, props }) {
         const fetchAllScores = async () => {
             const allSportsData = []; // Initialize an empty array to hold all sports data
 
+            // Get current timestamp
+            const now = new Date().getTime();
+
+            // Assuming each game lasts approximately 3 hours (10800 seconds)
+            const gameDuration = 10800 * 1000; // Convert to milliseconds
+
             const nbaScores = await fetchScores('basketball_nba');
-            allSportsData.push(...nbaScores);
+            const liveNbaScores = nbaScores.filter(score => {
+                const gameEndTime = score.commence_time + gameDuration;
+                return score.commence_time <= now && now <= gameEndTime;
+            });
+            allSportsData.push(...liveNbaScores);
 
             const mlbScores = await fetchScores('baseball_mlb');
-            allSportsData.push(...mlbScores);
+            const liveMlbScores = mlbScores.filter(score => {
+                const gameEndTime = score.commence_time + gameDuration;
+                return score.commence_time <= now && now <= gameEndTime;
+            });
+            allSportsData.push(...liveMlbScores);
 
             const nhlScores = await fetchScores('icehockey_nhl');
-            allSportsData.push(...nhlScores);
+            const liveNhlScores = nhlScores.filter(score => {
+                const gameEndTime = score.commence_time + gameDuration;
+                return score.commence_time <= now && now <= gameEndTime;
+            });
+            allSportsData.push(...liveNhlScores);
 
             setOdds(allSportsData); // Update the state with all fetched sports data
         };
@@ -100,11 +115,11 @@ function MainScreen({ navigation, account, props }) {
     };
 
     const fetchOdds = (sportKey, eventId) => {
-        axios.get(`https://api.the-odds-api.com/v4/sports/${sportKey}/events/${eventId}/odds?apiKey=${API_KEY}&regions=us&oddsFormat=american`)
+        axios.get(`https://api.the-odds-api.com/v4/sports/upcoming/odds?apiKey=${API_KEY}&regions=us&oddsFormat=american`)
             .then((response) => {
                 console.log(response.data);
-
-                setOddsData(response.data);
+                const liveGames = response.data.filter(game => game.commence_time <= Date.now() && !game.completed);
+                setOddsData(liveGames);
             })
             .catch((error) => {
                 console.error('There was an error!', error);
@@ -197,31 +212,15 @@ function MainScreen({ navigation, account, props }) {
     return (
         <PaperProvider theme={myTheme}>
             {/* Top Ribbon */}
-            {/* Custom Header Menu for MainScreen */}
-            <Appbar.Header> 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <Menu
-                    visible={menuVisible}
-                    onDismiss={closeMenu}
-                    anchor={
-                        <Button onPress={openMenu}>Main Menu</Button>
-                    }>
-                    <Menu.Item onPress={() => { console.log('Dashboard'); closeMenu(); }} title="Dashboard" />
-                    <Menu.Item onPress={() => { navigation.navigate('Offers'); closeMenu(); }} title="Offers" />
-                    <Menu.Item onPress={() => { console.log('Affiliate Program'); closeMenu(); }} title="Affiliate Program" />
-                    <Menu.Item onPress={() => { console.log('Account Info'); closeMenu(); }} title="Account Info" />
-                </Menu>
-                <Button onPress={() => navigation.navigate('Live')}>Live Games</Button>
-                <Button onPress={() => navigation.navigate('AllSports')}>All Sports</Button>
-                <Button onPress={() => navigation.navigate('TopPicks')}>Top Picks</Button>
-                <Button onPress={() => navigation.navigate('Podcasts')}>Podcasts</Button>
-                <Button onPress={() => navigation.navigate('Chat')}>Chat</Button>
-            </ScrollView>
-        </Appbar.Header>
+            <HeaderMenu
+                navigation={navigation}
+                reactNavigation={reactNavigation}
+
+            />
+
             {/*Main Section*/}
             <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'space-between' }}>
                 <ScrollView style={{ padding: 10 }}>
-                    <Text variant="titleLarge">Upcoming Games</Text>
                     <OfferCards />
                     <Divider />
                     {odds ? odds.map((game, index) => (
@@ -256,7 +255,7 @@ function MainScreen({ navigation, account, props }) {
                                 <Text>{game.sport_key}</Text>
                             </Card.Actions>
                         </Card>
-                    )) : null}
+                    )) : <Text>No Live Games</Text>}
                 </ScrollView>
             </View>
             <KeyboardAvoidingView
@@ -298,4 +297,4 @@ function MainScreen({ navigation, account, props }) {
     );
 }
 
-export default connect(mapStateToProps, { checkWallet })(MainScreen);
+export default connect(mapStateToProps, { checkWallet })(LiveScreen);

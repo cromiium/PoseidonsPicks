@@ -1,19 +1,13 @@
 import React from 'react';
-import { Provider as PaperProvider, DefaultTheme, Divider, Button, Title, Appbar, Menu, Text, Card, TextInput, List, Modal, } from 'react-native-paper';
+import { Provider as PaperProvider, DefaultTheme, Divider, Button, Title, Appbar, Text, Card, TextInput, List, Modal, } from 'react-native-paper';
 import { View, ScrollView, Platform, KeyboardAvoidingView, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import axios from 'axios';
-import { useNavigation } from '@react-navigation/native';
 // Redux imports
 import { connect, useDispatch } from 'react-redux';
 import { checkWallet } from '../redux/actions/accountActions';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-
-// Custom components
-import OfferCards from '../components/OfferCards';
-import HeaderMenu from '../components/HeaderMenu';
-
 const URI = 'https://api.the-odds-api.com';
 const API_KEY = '1f8b1fb4621b92c5ebc5280bfedf7bcf';
 const myBookmakers = ['draftkings', 'fanduel', 'betmgm', 'williamhill_us', 'wynnb'];
@@ -43,60 +37,33 @@ function MainScreen({ navigation, account, props }) {
     const [placedBets, setPlacedBets] = React.useState([]);
     const [showConfirmationCard, setShowConfirmationCard] = React.useState(false);
     const [wageredAmount, setWageredAmount] = React.useState(null);
-    const [menuVisible, setMenuVisible] = React.useState(false);
-
-    const reactNavigation = useNavigation();
-    const openMenu = () => setMenuVisible(true);
-
-    const closeMenu = () => setMenuVisible(false);
-
 
 
     const dispatch = useDispatch();
 
-    // React.useEffect(() => {
-    //     axios.get(`https://api.the-odds-api.com/v4/sports/?apiKey=${API_KEY}`)
-    //         .then((response) => {
-    //             setSports(response.data);
-    //         })
-    //         .catch((error) => {
-    //             console.error('There was an error!', error);
-    //         });
-    //         fetchScores('basketball_nba'); // Fetch NBA scores by default
-    // }, []);
-
-    // All sports Fetch
     React.useEffect(() => {
-        const fetchAllScores = async () => {
-            const allSportsData = []; // Initialize an empty array to hold all sports data
-
-            const nbaScores = await fetchScores('basketball_nba');
-            allSportsData.push(...nbaScores);
-
-            const mlbScores = await fetchScores('baseball_mlb');
-            allSportsData.push(...mlbScores);
-
-            const nhlScores = await fetchScores('icehockey_nhl');
-            allSportsData.push(...nhlScores);
-
-            setOdds(allSportsData); // Update the state with all fetched sports data
-        };
-
-        fetchAllScores().catch(console.error);
+        axios.get(`https://api.the-odds-api.com/v4/sports/?apiKey=${API_KEY}`)
+            .then((response) => {
+                setSports(response.data);
+            })
+            .catch((error) => {
+                console.error('There was an error!', error);
+            });
+            fetchScores('basketball_nba'); // Fetch NBA scores by default
     }, []);
 
     // Fetches scores data from API 
-    const fetchScores = async (sportKey) => {
+    const fetchScores = (sportKey) => {
         setExpandedCardIndex(null);
         setOddsData(null);
-        try {
-            const response = await axios.get(`https://api.the-odds-api.com/v4/sports/${sportKey}/scores/?apiKey=${API_KEY}`);
-            console.log(response.data);
-            return response.data; // Return the fetched data
-        } catch (error) {
-            console.error('There was an error!', error);
-            return []; // Return an empty array in case of an error
-        }
+        axios.get(`https://api.the-odds-api.com/v4/sports/${sportKey}/scores/?apiKey=${API_KEY}`)
+            .then((response) => {
+                console.log(response.data);
+                setOdds(response.data);
+            })
+            .catch((error) => {
+                console.error('There was an error!', error);
+            });
     };
 
     const fetchOdds = (sportKey, eventId) => {
@@ -197,36 +164,52 @@ function MainScreen({ navigation, account, props }) {
     return (
         <PaperProvider theme={myTheme}>
             {/* Top Ribbon */}
-            {/* Custom Header Menu for MainScreen */}
-            <Appbar.Header> 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <Menu
-                    visible={menuVisible}
-                    onDismiss={closeMenu}
-                    anchor={
-                        <Button onPress={openMenu}>Main Menu</Button>
-                    }>
-                    <Menu.Item onPress={() => { console.log('Dashboard'); closeMenu(); }} title="Dashboard" />
-                    <Menu.Item onPress={() => { navigation.navigate('Offers'); closeMenu(); }} title="Offers" />
-                    <Menu.Item onPress={() => { console.log('Affiliate Program'); closeMenu(); }} title="Affiliate Program" />
-                    <Menu.Item onPress={() => { console.log('Account Info'); closeMenu(); }} title="Account Info" />
-                </Menu>
-                <Button onPress={() => navigation.navigate('Live')}>Live Games</Button>
-                <Button onPress={() => navigation.navigate('AllSports')}>All Sports</Button>
-                <Button onPress={() => navigation.navigate('TopPicks')}>Top Picks</Button>
-                <Button onPress={() => navigation.navigate('Podcasts')}>Podcasts</Button>
-                <Button onPress={() => navigation.navigate('Chat')}>Chat</Button>
-            </ScrollView>
-        </Appbar.Header>
+            <Appbar.Header>
+                <ScrollView horizontal>
+                    <Button
+                        size={20}
+                        onPress={() => fetchScores('basketball_nba')}
+                    >
+                        <FontAwesome5Icon name="basketball-ball" />
+                        <Text>NBA</Text>
+                    </Button>
+                    <Button
+                        size={20}
+                        onPress={() => fetchScores('baseball_mlb')}
+                    >
+                        <FontAwesome5Icon name="baseball-ball" />
+                        <Text>MLB</Text>
+                    </Button>
+                    <Button
+                        size={20}
+                        onPress={() => fetchScores('icehockey_nhl')}
+                    >
+                        <FontAwesome5Icon name="hockey-puck" />
+                        <Text>NHL</Text>
+                    </Button>
+                    <Button
+                        size={20}
+                        onPress={() => fetchScores('soccer_uefa_champs_league')}
+                    >
+                        <FontAwesomeIcon name="soccer-ball-o" />
+                        <Text>Champions League</Text>
+                    </Button>
+                    <Button
+                        size={20}
+                        onPress={() => fetchScores('soccer_usa_mls')}
+                    >
+                        <FontAwesomeIcon name="soccer-ball-o" />
+                        <Text>MLS</Text>
+                    </Button>
+                </ScrollView>
+            </Appbar.Header>
+
             {/*Main Section*/}
-            <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'space-between' }}>
-                <ScrollView style={{ padding: 10 }}>
-                    <Text variant="titleLarge">Upcoming Games</Text>
-                    <OfferCards />
-                    <Divider />
+            <View>
+                <ScrollView>
                     {odds ? odds.map((game, index) => (
-                        <Card key={index} onPress={() => { setExpandedCardIndex(prevIndex => prevIndex === index ? null : index); fetchOdds(game.sport_key, game.id); }} style={{ borderWidth: 1, borderColor: '#204d8c', marginBottom: 10 }}>
-                            <Card.Title title={`${game.away_team} @ ${game.home_team}`} subtitle={new Date(game.commence_time).toLocaleString(undefined, { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })} />
+                        <Card key={index} onPress={() => { setExpandedCardIndex(prevIndex => prevIndex === index ? null : index); fetchOdds(game.sport_key, game.id); }} style={{ borderWidth: 1, borderColor: '#204d8c' }}>
+                            <Card.Title title={`${game.away_team} @ ${game.home_team}`} subtitle={new Date(game.commence_time).toLocaleString()} />
 
                             {expandedCardIndex === index && oddsData && (
                                 <Card.Content>
@@ -234,9 +217,10 @@ function MainScreen({ navigation, account, props }) {
                                         <List.Section key={i}>
                                             <List.Subheader style={{ alignSelf: 'center' }}>{bookmaker.title}</List.Subheader>
                                             <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-                                                {bookmaker.markets.map((market) => (
+                                                {bookmaker.markets.map((market, j) => (
                                                     market.outcomes.map((outcome, k) => (
                                                         <List.Item
+
                                                             key={k}
                                                             title={
                                                                 <Button onPress={() => startBet(bookmaker, outcome, outcome.price)}
@@ -247,22 +231,16 @@ function MainScreen({ navigation, account, props }) {
                                                     ))
                                                 ))}
                                             </View>
-                                            <Divider style={{ alignSelf: 'center', marginTop: 10 }} />
+                                            <Divider style={{ alignSelf: 'center' }} />
                                         </List.Section>
                                     ))}
                                 </Card.Content>
                             )}
-                            <Card.Actions style={{ justifyContent: 'flex-start' }}>
-                                <Text>{game.sport_key}</Text>
-                            </Card.Actions>
                         </Card>
                     )) : null}
                 </ScrollView>
             </View>
-            <KeyboardAvoidingView
-                style={{ position: 'absolute', bottom: 0, width: '100%', paddingBottom: 5 }}
-                behavior="padding" enabled={Platform.OS === 'ios'}
-            >
+            <View style={{ position: 'absolute', bottom: 0, width: '100%', paddingBottom: 5 }}>
                 {showConfirmationCard && (
                     <Card style={{ borderWidth: 1, borderColor: '#204d8c' }}>
                         <Card.Content>
@@ -293,7 +271,7 @@ function MainScreen({ navigation, account, props }) {
                         </Card.Content>
                     </Card>
                 )}
-            </KeyboardAvoidingView>
+            </View>
         </PaperProvider >
     );
 }

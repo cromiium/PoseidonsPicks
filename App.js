@@ -4,12 +4,19 @@ import { AppRegistry, Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+// Screens
 import MainScreen from './src/screens/MainScreen.js';
 import MyAccountScreen from './src/screens/myAccountScreen.js';
 import MyBetsScreen from './src/screens/MyBetsScreen.js';
 import LoginScreen from './src/screens/LoginScreen.js';
 import SignUpScreen from './src/screens/SignUpScreen.js';
-//import ChatScreen from './src/screens/ChatScreen.js';
+import LiveScreen from './src/screens/LiveScreen.js';
+import ChatScreen from './src/screens/ChatScreen.js';
+import AllSportsScreen from './src/screens/AllSportsScreen.js';
+import TopPicksScreen from './src/screens/TopPicksScreen.js';
+import OffersScreen from './src/screens/OffersScreen.js';
+import PodcastsScreen from './src/screens/PodcastsScreen.js';
+
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { Provider } from 'react-redux';
 import store from './src/redux/store.js';
@@ -60,9 +67,14 @@ export default function App() {
         <NavigationContainer>
           <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-            {/*<Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />*/}
+            <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
             <Stack.Screen name="SignUpScreen" component={SignUpScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Live" component={LiveScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="AllSports" component={AllSportsScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="TopPicks" component={TopPicksScreen} options={{ headerShown: false }} />
             <Stack.Screen name="App" component={BottomTabNavigator} options={{ gestureEnabled: false, headerShown: false }} />
+            <Stack.Screen name="Offers" component={OffersScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Podcasts" component={PodcastsScreen} options={{ headerShown: false }} />
           </Stack.Navigator>
         </NavigationContainer>
       </PaperProvider>
