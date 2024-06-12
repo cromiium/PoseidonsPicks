@@ -221,8 +221,8 @@ function MainScreen({ navigation, account, props }) {
             {/*Main Section*/}
             <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'space-between' }}>
                 <ScrollView style={{ padding: 10 }}>
-                    <Text variant="titleLarge">Upcoming Games</Text>
                     <OfferCards />
+                    <Text variant="titleLarge">Upcoming Games</Text>
                     <Divider />
                     {odds ? odds.map((game, index) => (
                         <Card key={index} onPress={() => { setExpandedCardIndex(prevIndex => prevIndex === index ? null : index); fetchOdds(game.sport_key, game.id); }} style={{ borderWidth: 1, borderColor: '#204d8c', marginBottom: 10 }}>

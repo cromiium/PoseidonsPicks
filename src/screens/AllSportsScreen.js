@@ -247,7 +247,10 @@ function AllSportsScreen({ navigation, account, props }) {
                     )) : null}
                 </ScrollView>
             </View>
-            <View style={{ position: 'absolute', bottom: 0, width: '100%', paddingBottom: 5 }}>
+            <KeyboardAvoidingView
+                style={{ position: 'absolute', bottom: 0, width: '100%', paddingBottom: 5 }}
+                behavior="padding" enabled={Platform.OS === 'ios'}
+            >
                 {showConfirmationCard && (
                     <Card style={{ borderWidth: 1, borderColor: '#204d8c' }}>
                         <Card.Content>
@@ -278,7 +281,7 @@ function AllSportsScreen({ navigation, account, props }) {
                         </Card.Content>
                     </Card>
                 )}
-            </View>
+            </KeyboardAvoidingView>
         </PaperProvider >
     );
 }
