@@ -14,10 +14,67 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import OfferCards from '../components/OfferCards';
 import HeaderMenu from '../components/HeaderMenu';
 
-const URI = 'https://api.the-odds-api.com';
-const API_KEY = '1f8b1fb4621b92c5ebc5280bfedf7bcf';
+const ODDS_URI = 'https://api.the-odds-api.com';
+const ODDS_API_KEY = '1f8b1fb4621b92c5ebc5280bfedf7bcf';
 const myBookmakers = ['draftkings', 'fanduel', 'betmgm', 'williamhill_us', 'wynnb'];
 
+
+// Weather API
+const WEATHER_URI = 'http://api.weatherapi.com/v1/';
+const WEATHER_API_KEY = 'ff7d5478cc1647d698224807241707';
+
+const extractLocation = (homeTeam) => {
+    // Split the home team string into an array of words
+    const words = homeTeam.split(' ');
+
+    // Eliminate the last word, assuming it's the team name
+    const location = words.slice(0, -1).join(' ');
+
+    return location;
+};
+
+const WeatherInfo = ({ homeTeam }) => {
+    const [weather, setWeather] = React.useState('');
+    const [windMph, setWindMph] = React.useState(0);
+
+    React.useEffect(() => {
+        const location = extractLocation(homeTeam);
+        fetchCurrentWeather(location)
+            .then(data => {
+                // Update state with both condition text and wind speed
+                setWeather(data.condition);
+                setWindMph(data.windMph);
+            })
+            .catch(console.error);
+    }, [homeTeam]);
+
+    return (
+        <React.Fragment>
+            <Text style={{marginRight: 10}}>Weather:</Text>
+            <Text>{weather}</Text>
+            <Divider style={{ width: 1, height: '100%', marginHorizontal: 10}} />
+            <Text>{windMph} mph</Text>
+        </React.Fragment>
+    );
+};
+
+const fetchCurrentWeather = async (location) => {
+    try {
+        const response = await fetch(`https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${location}`);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return {
+            // Return both the condition text and wind speed
+            condition: data.current.condition.text,
+            windMph: data.current.wind_mph
+        };
+    } catch (error) {
+        console.error('Failed to fetch weather data:', error);
+        throw error; // Rethrow the error if you want the caller to handle it
+    }
+};
 
 const mapStateToProps = state => ({
     account: state,
@@ -44,6 +101,7 @@ function MainScreen({ navigation, account, props }) {
     const [showConfirmationCard, setShowConfirmationCard] = React.useState(false);
     const [wageredAmount, setWageredAmount] = React.useState(null);
     const [menuVisible, setMenuVisible] = React.useState(false);
+    const [weatherConidtion, setWeatherCondition] = React.useState(null);
 
     const reactNavigation = useNavigation();
     const openMenu = () => setMenuVisible(true);
@@ -55,7 +113,7 @@ function MainScreen({ navigation, account, props }) {
     const dispatch = useDispatch();
 
     // React.useEffect(() => {
-    //     axios.get(`https://api.the-odds-api.com/v4/sports/?apiKey=${API_KEY}`)
+    //     axios.get(`https://api.the-odds-api.com/v4/sports/?apiKey=${ODDS_API_KEY}`)
     //         .then((response) => {
     //             setSports(response.data);
     //         })
@@ -90,7 +148,7 @@ function MainScreen({ navigation, account, props }) {
         setExpandedCardIndex(null);
         setOddsData(null);
         try {
-            const response = await axios.get(`https://api.the-odds-api.com/v4/sports/${sportKey}/scores/?apiKey=${API_KEY}`);
+            const response = await axios.get(`https://api.the-odds-api.com/v4/sports/${sportKey}/scores/?apiKey=${ODDS_API_KEY}`);
             console.log(response.data);
             return response.data; // Return the fetched data
         } catch (error) {
@@ -100,7 +158,7 @@ function MainScreen({ navigation, account, props }) {
     };
 
     const fetchOdds = (sportKey, eventId) => {
-        axios.get(`https://api.the-odds-api.com/v4/sports/${sportKey}/events/${eventId}/odds?apiKey=${API_KEY}&regions=us&oddsFormat=american`)
+        axios.get(`https://api.the-odds-api.com/v4/sports/${sportKey}/events/${eventId}/odds?apiKey=${ODDS_API_KEY}&regions=us&oddsFormat=american`)
             .then((response) => {
                 console.log(response.data);
 
@@ -198,26 +256,26 @@ function MainScreen({ navigation, account, props }) {
         <PaperProvider theme={myTheme}>
             {/* Top Ribbon */}
             {/* Custom Header Menu for MainScreen */}
-            <Appbar.Header> 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <Menu
-                    visible={menuVisible}
-                    onDismiss={closeMenu}
-                    anchor={
-                        <Button onPress={openMenu}>Main Menu</Button>
-                    }>
-                    <Menu.Item onPress={() => { console.log('Dashboard'); closeMenu(); }} title="Dashboard" />
-                    <Menu.Item onPress={() => { navigation.navigate('Offers'); closeMenu(); }} title="Offers" />
-                    <Menu.Item onPress={() => { console.log('Affiliate Program'); closeMenu(); }} title="Affiliate Program" />
-                    <Menu.Item onPress={() => { console.log('Account Info'); closeMenu(); }} title="Account Info" />
-                </Menu>
-                <Button onPress={() => navigation.navigate('Live')}>Live Games</Button>
-                <Button onPress={() => navigation.navigate('AllSports')}>All Sports</Button>
-                <Button onPress={() => navigation.navigate('TopPicks')}>Top Picks</Button>
-                <Button onPress={() => navigation.navigate('Podcasts')}>Podcasts</Button>
-                <Button onPress={() => navigation.navigate('Chat')}>Chat</Button>
-            </ScrollView>
-        </Appbar.Header>
+            <Appbar.Header>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <Menu
+                        visible={menuVisible}
+                        onDismiss={closeMenu}
+                        anchor={
+                            <Button onPress={openMenu}>Main Menu</Button>
+                        }>
+                        <Menu.Item onPress={() => { console.log('Dashboard'); closeMenu(); }} title="Dashboard" />
+                        <Menu.Item onPress={() => { navigation.navigate('Offers'); closeMenu(); }} title="Offers" />
+                        <Menu.Item onPress={() => { console.log('Affiliate Program'); closeMenu(); }} title="Affiliate Program" />
+                        <Menu.Item onPress={() => { console.log('Account Info'); closeMenu(); }} title="Account Info" />
+                    </Menu>
+                    <Button onPress={() => navigation.navigate('Live')}>Live Games</Button>
+                    <Button onPress={() => navigation.navigate('AllSports')}>All Sports</Button>
+                    <Button onPress={() => navigation.navigate('TopPicks')}>Top Picks</Button>
+                    <Button onPress={() => navigation.navigate('Podcasts')}>Podcasts</Button>
+                    <Button onPress={() => navigation.navigate('Chat')}>Chat</Button>
+                </ScrollView>
+            </Appbar.Header>
             {/*Main Section*/}
             <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'space-between' }}>
                 <ScrollView style={{ padding: 10 }}>
@@ -225,7 +283,12 @@ function MainScreen({ navigation, account, props }) {
                     <Text variant="titleLarge">Upcoming Games</Text>
                     <Divider />
                     {odds ? odds.map((game, index) => (
-                        <Card key={index} onPress={() => { setExpandedCardIndex(prevIndex => prevIndex === index ? null : index); fetchOdds(game.sport_key, game.id); }} style={{ borderWidth: 1, borderColor: '#204d8c', marginBottom: 10 }}>
+                        <Card key={index} onPress={() => {
+                            // Handle card expansion
+                            setExpandedCardIndex(prevIndex => prevIndex === index ? null : index);
+                            fetchOdds(game.sport_key, game.id);
+                        }}
+                            style={{ borderWidth: 1, borderColor: '#204d8c', marginBottom: 10 }}>
                             <Card.Title title={`${game.away_team} @ ${game.home_team}`} subtitle={new Date(game.commence_time).toLocaleString(undefined, { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })} />
 
                             {expandedCardIndex === index && oddsData && (
@@ -253,6 +316,9 @@ function MainScreen({ navigation, account, props }) {
                                 </Card.Content>
                             )}
                             <Card.Actions style={{ justifyContent: 'flex-start' }}>
+
+                                <WeatherInfo homeTeam={game.home_team} />
+                                <Divider style={{ width: 1, height: '100%', marginHorizontal: 10}} />
                                 <Text>{game.sport_key}</Text>
                             </Card.Actions>
                         </Card>
